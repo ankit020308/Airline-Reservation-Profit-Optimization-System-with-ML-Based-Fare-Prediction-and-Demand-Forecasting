@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zenith Optima — Airline Profit Optimization System</title>
+  <meta name="description" content="Airline Reservation Profit Optimization System with ML-Based Fare Prediction and Demand Forecasting." />
+  <meta name="keywords" content="airline booking, profit optimization, fare prediction, demand forecasting, AI airline" />
+  <meta property="og:title" content="Zenith Optima — AI-Powered Airline Platform" />
+  <meta property="og:description" content="Maximize airline revenue with intelligent dynamic pricing and real-time operations." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Socket.IO Client -->
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+
+  <!-- App Root -->
+  <div id="app">
+    <!-- Loading splash -->
+    <div id="splash" class="splash">
+      <div class="splash-content">
+        <div class="splash-logo">✈️</div>
+        <h1 class="splash-title">Zenith Optima</h1>
+        <div class="splash-bar"><div class="splash-progress"></div></div>
+        <p class="splash-sub">Initializing intelligent platform...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Chatbot Widget -->
+  <div id="chatbot-widget" class="chatbot-widget">
+    <button id="chatbot-toggle" class="chatbot-toggle" onclick="App.toggleChatbot()">
+      <span class="chatbot-icon">🤖</span>
+      <span class="chatbot-badge" id="chatbot-badge" style="display:none">1</span>
+    </button>
+    <div id="chatbot-panel" class="chatbot-panel" style="display:none">
+      <div class="chatbot-header">
+        <span>✈️ ZenithAI — Your Travel Assistant</span>
+        <button onclick="App.toggleChatbot()">✕</button>
+      </div>
+      <div class="chatbot-messages" id="chatbot-messages"></div>
+      <div class="chatbot-suggestions" id="chatbot-suggestions"></div>
+      <div class="chatbot-input">
+        <input type="text" id="chatbot-input" placeholder="Ask me anything about flights..." />
+        <button onclick="App.sendChatMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

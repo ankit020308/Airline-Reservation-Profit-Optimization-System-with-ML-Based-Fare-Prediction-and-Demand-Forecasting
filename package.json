@@ -1,0 +1,38 @@
+{
+  "name": "zenith-optima-ai",
+  "version": "1.1.0",
+  "description": "Airline Reservation Profit Optimization System with ML-Based Fare Prediction and Demand Forecasting",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "seed": "node server/db/seed.js",
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
+    "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
+    "nodemailer": "^6.9.7",
+    "pg": "^8.11.3",
+    "prom-client": "^15.1.3",
+    "redis": "^5.12.1",
+    "socket.io": "^4.6.1",
+    "uuid": "^9.0.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
+  }
+}
