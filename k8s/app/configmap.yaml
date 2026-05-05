@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zenith-config
+  namespace: zenith-optima
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  DEMO_MODE: "false"
+  DB_POOL_MAX: "20"
+  DB_POOL_MIN: "2"
+  DB_READ_POOL_MAX: "10"
+  DB_SSL: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zenith-secrets
+  namespace: zenith-optima
+type: Opaque
+stringData:
+  # ⚠️  REPLACE ALL VALUES BEFORE DEPLOYING
+  DATABASE_URL: "postgresql://sky:CHANGE_ME@postgres-service:5432/skyplatform"
+  DATABASE_READ_URL: "postgresql://sky:CHANGE_ME@postgres-read-service:5432/skyplatform"
+  REDIS_URL: "redis://redis-service:6379"
+  KAFKA_BROKERS: "kafka-service:29092"
+  JWT_SECRET: "CHANGE_ME_IN_PRODUCTION_JWT_SECRET_MIN_32_CHARS"
+  REFRESH_SECRET: "CHANGE_ME_IN_PRODUCTION_REFRESH_SECRET_MIN_32_CHARS"
+  ALLOWED_ORIGINS: "https://your-domain.com"

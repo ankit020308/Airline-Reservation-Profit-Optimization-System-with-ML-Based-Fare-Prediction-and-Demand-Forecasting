@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zenith-optima
+  labels:
+    app.kubernetes.io/name: zenith-optima
+    environment: production

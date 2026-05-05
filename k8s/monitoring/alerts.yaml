@@ -1,0 +1,82 @@
+groups:
+  - name: zenith-critical
+    rules:
+      # ── Application ───────────────────────────────────────────────────────
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "HTTP 5xx error rate > 1% for 2 minutes"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      - alert: HighP99Latency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P99 latency > 2 seconds"
+          description: "99th percentile latency is {{ $value }}s"
+
+      - alert: AppDown
+        expr: up{job="zenith-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Zenith app instance is down"
+
+      # ── Database ──────────────────────────────────────────────────────────
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_activity_count > 90
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Postgres connection count > 90 (pool near limit)"
+
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is unreachable"
+
+      # ── Redis ─────────────────────────────────────────────────────────────
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is unreachable — auth and cache will fail"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage > 85%"
+
+      # ── Kafka ─────────────────────────────────────────────────────────────
+      - alert: KafkaConsumerLagHigh
+        expr: kafka_consumer_group_lag_sum > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer lag > 1000 messages"
+          description: "Group {{ $labels.group }} is behind on topic {{ $labels.topic }}"
+
+      # ── Business ─────────────────────────────────────────────────────────
+      - alert: BookingErrorsHigh
+        expr: rate(http_requests_total{path="/api/bookings", status=~"5.."}[5m]) > 0.1
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Booking endpoint errors > 0.1/s for 3 minutes — revenue impact"

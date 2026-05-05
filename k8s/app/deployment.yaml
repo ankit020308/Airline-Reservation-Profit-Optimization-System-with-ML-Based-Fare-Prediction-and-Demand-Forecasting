@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zenith-app
+  namespace: zenith-optima
+  labels:
+    app: zenith-app
+    version: v2.1.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zenith-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0     # Zero-downtime deploys
+  template:
+    metadata:
+      labels:
+        app: zenith-app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "3000"
+        prometheus.io/path:   "/api/metrics"
+    spec:
+      terminationGracePeriodSeconds: 30
+
+      # Security hardening
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+
+      containers:
+        - name: zenith-app
+          image: zenith-optima:latest         # Replace with your registry
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          
+          resources:
+            requests:
+              cpu:    "250m"
+              memory: "512Mi"
+            limits:
+              cpu:    "1000m"
+              memory: "1Gi"
+
+          envFrom:
+            - configMapRef:
+                name: zenith-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: DATABASE_URL
+            - name: DATABASE_READ_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: DATABASE_READ_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: REDIS_URL
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: KAFKA_BROKERS
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: JWT_SECRET
+            - name: REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: REFRESH_SECRET
+            - name: ALLOWED_ORIGINS
+              valueFrom:
+                secretKeyRef:
+                  name: zenith-secrets
+                  key: ALLOWED_ORIGINS
+
+          # Readiness: don't send traffic until healthy
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Liveness: restart if stuck
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+
+          # Startup: allow longer boot time for initial DB seed
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12   # 60s total
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]   # Allow load balancer to drain
+
+      affinity:
+        # Spread replicas across nodes for HA
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: zenith-app
+                topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zenith-service
+  namespace: zenith-optima
+  labels:
+    app: zenith-app
+spec:
+  selector:
+    app: zenith-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
